@@ -413,6 +413,19 @@ int main(int argc, char **argv)
 
         Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
 
+        // Current spin time (keeps showing the last spin after it stops)
+        format_time(buf, sizeof(buf), spin_time);
+        float tw = Gfx_TextWidth(buf, 2.0f);
+        float lw = Gfx_TextWidth("SPIN TIME", 1.0f);
+        // Size the box for "00:00.0" so it doesn't jitter as the digits change
+        float bw = Gfx_TextWidth("00:00.0", 2.0f);
+        if (tw > bw) bw = tw;
+        if (lw > bw) bw = lw;
+        bw += 20 * ax;
+        Gfx_Rect(608 - bw, 22, bw, 70, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
+        Gfx_Text(598 - lw, 28, 1.0f, accent, "SPIN TIME");
+        Gfx_Text(598 - tw, 50, 2.0f, spinning ? white : cyan, buf);
+
 
         // Records panel
         float px = 32, py = 340;
