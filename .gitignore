@@ -1,0 +1,8 @@
+.DS_Store
+build/
+portlibs/
+build_preview.png
+*.o
+*.d
+*.elf
+*.dol

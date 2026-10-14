@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<app version='1.0'>
+    <name>FidgetWii</name>
+    <coder>quatric</coder>
+    <version>1.0</version>
+    <release_date>20261014000000</release_date>
+    <short_description>A fidget spinner for your Wii.</short_description>
+    <long_description>Spin a fidget spinner on your TV.
+
+Press A to flick it, point at it and hold B to grab and spin it by hand, shake the Wii Remote or rotate an analog stick to speed it up, and hold B to brake.
+
+Pick from 12 colors or Rainbow with Left/Right or +/-. Your top speed, longest spin and total spins are saved to the SD card (apps/FidgetWii/record.txt).
+
+Works with Wii Remote, Nunchuk, Classic Controller, GameCube controller and USB keyboard.
+
+Spinner photo: "Yellow Fidget Spinner" by Daserino, CC BY-SA 4.0, via Wikimedia Commons.</long_description>
+</app>
