@@ -4,8 +4,8 @@
 #include <gccore.h>
 #include "gfx.h"
 #include "font_data.h"
-#include "font_regular_bin.h"
-#include "font_bold_bin.h"
+#include "font_small_bin.h"
+#include "font_large_bin.h"
 
 #define FIFO_SIZE (256 * 1024)
 
@@ -18,7 +18,7 @@ typedef struct
 static void *xfb[2];
 static int fb;
 static GXRModeObj *rmode;
-static Font font_regular, font_bold;
+static Font font_small, font_large;
 static float aspect_x = 1.0f;
 
 float Gfx_AspectX(void)
@@ -110,8 +110,8 @@ void Gfx_Init(void)
     GX_SetAlphaUpdate(GX_TRUE);
     GX_SetColorUpdate(GX_TRUE);
 
-    load_font(&font_regular, &font_regular_info, font_regular_bin, font_regular_bin_size);
-    load_font(&font_bold, &font_bold_info, font_bold_bin, font_bold_bin_size);
+    load_font(&font_small, &font_small_info, font_small_bin, font_small_bin_size);
+    load_font(&font_large, &font_large_info, font_large_bin, font_large_bin_size);
 }
 
 void Gfx_BeginFrame(void)
@@ -199,10 +199,10 @@ void Gfx_RotatedTexture(GXTexObj *tex, float cx, float cy, float size, float ang
     GX_End();
 }
 
-// scale 1.0 is body text (16px em); larger sizes use the bold face
+// scale 1.0 is body text (16px em); larger sizes use the large atlas
 static const Font *pick_font(float scale, float *px)
 {
-    const Font *font = scale >= 1.5f ? &font_bold : &font_regular;
+    const Font *font = scale >= 1.5f ? &font_large : &font_small;
     *px = 16.0f * scale * 1.15f / font->info->size;
     return font;
 }

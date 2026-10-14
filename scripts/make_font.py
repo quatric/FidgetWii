@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Pre-render the HUD fonts into GX I8 glyph atlases.
 
-Usage: make_font.py <regular.otf> <bold.otf>
+Usage: make_font.py <font.otf>
 
-Writes data/font_regular.bin, data/font_bold.bin and source/font_data.h.
+Writes data/font_small.bin, data/font_large.bin and source/font_data.h.
 Only printable ASCII is rendered. Requires Pillow.
 """
 import sys
@@ -15,8 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 ATLAS_W = 512
 CHARS = [chr(c) for c in range(32, 127)]
 
-# (name, font argument index, pixel size)
-FONTS = [("regular", 1, 22), ("bold", 2, 56)]
+# (name, pixel size)
+FONTS = [("small", 22), ("large", 56)]
 
 
 def build(name, path, size):
@@ -69,7 +69,7 @@ def build(name, path, size):
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         sys.exit(__doc__)
 
     out = [
@@ -92,8 +92,8 @@ def main():
         "} FontInfo;",
         "",
     ]
-    for name, arg, size in FONTS:
-        out.append(build(name, sys.argv[arg], size))
+    for name, size in FONTS:
+        out.append(build(name, sys.argv[1], size))
         out.append("")
     out.append("#endif")
     (ROOT / "source" / "font_data.h").write_text("\n".join(out) + "\n")

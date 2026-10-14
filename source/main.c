@@ -407,8 +407,8 @@ int main(int argc, char **argv)
 
         // HUD
         const Color white = {255, 255, 255, 255};
-        const Color dim = {170, 178, 200, 255};
-        const Color accent = {255, 210, 60, 255};
+        const Color accent = {255, 200, 0, 255};
+        const Color cyan = {0, 220, 255, 255};
         char buf[64];
 
         Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
@@ -420,11 +420,11 @@ int main(int argc, char **argv)
         Gfx_Text(px + 10, py + 28, 1.0f, accent, "RECORDS");
         float vx = px + 226 * ax;
         snprintf(buf, sizeof(buf), "%d RPM", (int)(save.best_rpm + 0.5f));
-        Gfx_Text(px + 10, py + 52, 1.0f, dim, "Top speed");
-        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 52, 1.0f, white, buf);
+        Gfx_Text(px + 10, py + 52, 1.0f, white, "Top speed");
+        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 52, 1.0f, cyan, buf);
         format_time(buf, sizeof(buf), save.longest_spin);
-        Gfx_Text(px + 10, py + 72, 1.0f, dim, "Longest spin");
-        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 72, 1.0f, white, buf);
+        Gfx_Text(px + 10, py + 72, 1.0f, white, "Longest spin");
+        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 72, 1.0f, cyan, buf);
 
         // Colour picker
         snprintf(buf, sizeof(buf), "< %s >", colors[save.color].name);
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
         if (show_help && toast_timer <= 0.0f)
         {
             const char *help = "A Flick  B Grab/Brake  Shake Spin  +/- Color  HOME Quit";
-            Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(help, 1.0f)) / 2, 448, 1.0f, dim, help);
+            Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(help, 1.0f)) / 2, 448, 1.0f, white, help);
         }
 
         if (record_banner > 0.0f && fmodf(record_banner, 0.5f) > 0.15f)
