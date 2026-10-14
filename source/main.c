@@ -423,20 +423,13 @@ int main(int argc, char **argv)
         const Color white = {255, 255, 255, 255};
         const Color dim = {170, 178, 200, 255};
         const Color accent = {255, 210, 60, 255};
-        char buf[64], buf2[32];
+        char buf[64];
 
         Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
-        Gfx_TextShadow(38, 66, 1.0f, dim, "v" VERSION);
 
         snprintf(buf, sizeof(buf), "%d", (int)(rpm + 0.5f));
         Gfx_TextShadow(604 - Gfx_TextWidth(buf, 3.0f), 20, 3.0f, white, buf);
         Gfx_TextShadow(604 - Gfx_TextWidth("RPM", 1.0f), 76, 1.0f, dim, "RPM");
-        if (spinning)
-        {
-            format_time(buf2, sizeof(buf2), spin_time);
-            snprintf(buf, sizeof(buf), "Spin %s", buf2);
-            Gfx_TextShadow(604 - Gfx_TextWidth(buf, 1.0f), 98, 1.0f, dim, buf);
-        }
 
         // Records panel
         float px = 32, py = 340;
