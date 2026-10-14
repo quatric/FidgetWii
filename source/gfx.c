@@ -3,15 +3,22 @@
 #include <string.h>
 #include <gccore.h>
 #include "gfx.h"
+#include "font_data.h"
+#include "font_regular_bin.h"
+#include "font_bold_bin.h"
 
 #define FIFO_SIZE (256 * 1024)
 
-extern u8 console_font_8x16[];
+typedef struct
+{
+    const FontInfo *info;
+    GXTexObj tex;
+} Font;
 
 static void *xfb[2];
 static int fb;
 static GXRModeObj *rmode;
-static GXTexObj font_tex;
+static Font font_regular, font_bold;
 static float aspect_x = 1.0f;
 
 float Gfx_AspectX(void)
@@ -19,33 +26,10 @@ float Gfx_AspectX(void)
     return aspect_x;
 }
 
-static void build_font(void)
+static void load_font(Font *font, const FontInfo *info, const u8 *data, u32 size)
 {
-    // 16x16 grid of 8x16 glyphs -> 128x256 I8 texture (8x4 texel blocks)
-    const int w = 128, h = 256;
-    u8 *linear = malloc(w * h);
-    u8 *tiled = memalign(32, w * h);
-
-    for (int c = 0; c < 256; c++)
-    {
-        int ox = (c % 16) * 8, oy = (c / 16) * 16;
-        for (int y = 0; y < 16; y++)
-        {
-            u8 bits = console_font_8x16[c * 16 + y];
-            for (int x = 0; x < 8; x++)
-                linear[(oy + y) * w + ox + x] = (bits & (0x80 >> x)) ? 0xFF : 0x00;
-        }
-    }
-
-    u8 *dst = tiled;
-    for (int ty = 0; ty < h; ty += 4)
-        for (int tx = 0; tx < w; tx += 8)
-            for (int y = 0; y < 4; y++)
-                for (int x = 0; x < 8; x++)
-                    *dst++ = linear[(ty + y) * w + tx + x];
-
-    free(linear);
-    Gfx_LoadTexture(&font_tex, tiled, w * h, w, h, GX_TF_I8, false);
+    font->info = info;
+    Gfx_LoadTexture(&font->tex, data, size, info->atlas_w, info->atlas_h, GX_TF_I8, true);
 }
 
 void Gfx_LoadTexture(GXTexObj *obj, const void *data, u32 size, u16 w, u16 h, u8 fmt, bool smooth)
@@ -126,7 +110,8 @@ void Gfx_Init(void)
     GX_SetAlphaUpdate(GX_TRUE);
     GX_SetColorUpdate(GX_TRUE);
 
-    build_font();
+    load_font(&font_regular, &font_regular_info, font_regular_bin, font_regular_bin_size);
+    load_font(&font_bold, &font_bold_info, font_bold_bin, font_bold_bin_size);
 }
 
 void Gfx_BeginFrame(void)
@@ -214,30 +199,64 @@ void Gfx_RotatedTexture(GXTexObj *tex, float cx, float cy, float size, float ang
     GX_End();
 }
 
+// scale 1.0 is body text (16px em); larger sizes use the bold face
+static const Font *pick_font(float scale, float *px)
+{
+    const Font *font = scale >= 1.5f ? &font_bold : &font_regular;
+    *px = 16.0f * scale * 1.15f / font->info->size;
+    return font;
+}
+
 float Gfx_TextWidth(const char *text, float scale)
 {
-    return strlen(text) * 8.0f * scale * aspect_x;
+    float k;
+    const Font *font = pick_font(scale, &k);
+    float w = 0.0f;
+    for (; *text; text++)
+    {
+        u8 c = (u8)*text;
+        if (c < 32 || c > 126)
+            c = '?';
+        w += font->info->glyphs[c - 32].advance * 0.25f;
+    }
+    return w * k * aspect_x;
 }
 
 void Gfx_Text(float x, float y, float scale, Color color, const char *text)
 {
-    int len = strlen(text);
-    if (!len)
+    float k;
+    const Font *font = pick_font(scale, &k);
+    const FontInfo *info = font->info;
+    int quads = 0;
+    for (const char *p = text; *p; p++)
+        if (*p != ' ')
+            quads++;
+    if (!quads)
         return;
 
-    float cw = 8.0f * scale * aspect_x, ch = 16.0f * scale;
-    use_texture(&font_tex);
-    GX_Begin(GX_QUADS, GX_VTXFMT0, len * 4);
-    for (int i = 0; i < len; i++)
+    float baseline = y + 16.0f * scale * 0.95f;
+    float pen = x;
+    float iw = 1.0f / info->atlas_w, ih = 1.0f / info->atlas_h;
+
+    use_texture((GXTexObj *)&font->tex);
+    GX_Begin(GX_QUADS, GX_VTXFMT0, quads * 4);
+    for (; *text; text++)
     {
-        u8 c = (u8)text[i];
-        float s0 = (c % 16) / 16.0f, t0 = (c / 16) / 16.0f;
-        float s1 = s0 + 1.0f / 16.0f, t1 = t0 + 1.0f / 16.0f;
-        float px = x + i * cw;
-        vtx(px, y, color, s0, t0);
-        vtx(px + cw, y, color, s1, t0);
-        vtx(px + cw, y + ch, color, s1, t1);
-        vtx(px, y + ch, color, s0, t1);
+        u8 c = (u8)*text;
+        if (c < 32 || c > 126)
+            c = '?';
+        const FontGlyph *g = &info->glyphs[c - 32];
+        if (c != ' ')
+        {
+            float gx = pen + g->left * k * aspect_x, gy = baseline + g->top * k;
+            float gw = g->w * k * aspect_x, gh = g->h * k;
+            float s0 = g->x * iw, t0 = g->y * ih, s1 = (g->x + g->w) * iw, t1 = (g->y + g->h) * ih;
+            vtx(gx, gy, color, s0, t0);
+            vtx(gx + gw, gy, color, s1, t0);
+            vtx(gx + gw, gy + gh, color, s1, t1);
+            vtx(gx, gy + gh, color, s0, t1);
+        }
+        pen += g->advance * 0.25f * k * aspect_x;
     }
     GX_End();
 }

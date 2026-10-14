@@ -51,6 +51,12 @@ The spinner textures in `data/` are generated from `assets/spinner.png` with
 `python3 scripts/make_textures.py` (needs Pillow). The script splits the photo
 into a plastic layer, which is tinted at runtime, and an untinted bearing layer.
 
+The HUD font is FOT-Rodin NTLG Pro, pre-rendered into glyph atlases
+(`data/font_*.bin` and `source/font_data.h`). The font files themselves are not
+included; to regenerate the atlases, run:
+
+    python3 scripts/make_font.py FOT-RodinNTLGPro-DB.otf FOT-RodinNTLGPro-B.otf
+
 ## Credits
 
 - Controller input code from GlowWii.

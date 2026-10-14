@@ -426,41 +426,43 @@ int main(int argc, char **argv)
         char buf[64], buf2[32];
 
         Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
-        Gfx_TextShadow(36, 60, 1.0f, dim, "v" VERSION);
+        Gfx_TextShadow(38, 66, 1.0f, dim, "v" VERSION);
 
         snprintf(buf, sizeof(buf), "%d", (int)(rpm + 0.5f));
         Gfx_TextShadow(604 - Gfx_TextWidth(buf, 3.0f), 20, 3.0f, white, buf);
-        Gfx_TextShadow(604 - Gfx_TextWidth("RPM", 1.0f), 70, 1.0f, dim, "RPM");
+        Gfx_TextShadow(604 - Gfx_TextWidth("RPM", 1.0f), 76, 1.0f, dim, "RPM");
         if (spinning)
         {
             format_time(buf2, sizeof(buf2), spin_time);
             snprintf(buf, sizeof(buf), "Spin %s", buf2);
-            Gfx_TextShadow(604 - Gfx_TextWidth(buf, 1.0f), 90, 1.0f, dim, buf);
+            Gfx_TextShadow(604 - Gfx_TextWidth(buf, 1.0f), 98, 1.0f, dim, buf);
         }
 
         // Records panel
-        float px = 32, py = 352;
-        Gfx_Rect(px, py, 236 * ax, 84, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
-        Gfx_Text(px + 10, py + 6, 1.0f, accent, "RECORDS");
-        snprintf(buf, sizeof(buf), "Top speed  %d RPM", (int)(save.best_rpm + 0.5f));
-        Gfx_Text(px + 10, py + 26, 1.0f, white, buf);
-        format_time(buf2, sizeof(buf2), save.longest_spin);
-        snprintf(buf, sizeof(buf), "Longest    %s", buf2);
-        Gfx_Text(px + 10, py + 44, 1.0f, white, buf);
-        format_count(buf2, sizeof(buf2), save.total_spins);
-        snprintf(buf, sizeof(buf), "Total spins %s", buf2);
-        Gfx_Text(px + 10, py + 62, 1.0f, white, buf);
+        float px = 32, py = 340;
+        Gfx_Rect(px, py, 236 * ax, 98, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
+        Gfx_Text(px + 10, py + 8, 1.0f, accent, "RECORDS");
+        float vx = px + 226 * ax;
+        snprintf(buf, sizeof(buf), "%d RPM", (int)(save.best_rpm + 0.5f));
+        Gfx_Text(px + 10, py + 32, 1.0f, dim, "Top speed");
+        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 32, 1.0f, white, buf);
+        format_time(buf, sizeof(buf), save.longest_spin);
+        Gfx_Text(px + 10, py + 52, 1.0f, dim, "Longest spin");
+        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 52, 1.0f, white, buf);
+        format_count(buf, sizeof(buf), save.total_spins);
+        Gfx_Text(px + 10, py + 72, 1.0f, dim, "Total spins");
+        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 72, 1.0f, white, buf);
 
         // Colour picker
         snprintf(buf, sizeof(buf), "< %s >", colors[save.color].name);
         float cw = Gfx_TextWidth(buf, 1.0f);
         float cx = 608 - cw;
-        Gfx_Rect(cx - 44 * ax, py + 30, cw + 52 * ax, 36, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
-        Gfx_Disc(cx - 22 * ax, py + 48, 11, (Color){tint.r, tint.g, tint.b, 255}, (Color){tint.r, tint.g, tint.b, 255});
-        Gfx_Text(cx, py + 40, 1.0f, white, buf);
-        Gfx_Text(608 - Gfx_TextWidth("COLOR", 1.0f), py + 8, 1.0f, accent, "COLOR");
+        Gfx_Rect(cx - 44 * ax, py + 36, cw + 52 * ax, 40, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
+        Gfx_Disc(cx - 22 * ax, py + 56, 11, (Color){tint.r, tint.g, tint.b, 255}, (Color){tint.r, tint.g, tint.b, 255});
+        Gfx_Text(cx, py + 46, 1.0f, white, buf);
+        Gfx_Text(608 - Gfx_TextWidth("COLOR", 1.0f), py + 12, 1.0f, accent, "COLOR");
 
-        if (show_help)
+        if (show_help && toast_timer <= 0.0f)
         {
             const char *help = "A Flick  B Grab/Brake  Shake Spin  +/- Color  HOME Quit";
             Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(help, 1.0f)) / 2, 448, 1.0f, dim, help);
@@ -476,8 +478,8 @@ int main(int argc, char **argv)
         {
             u8 a = toast_timer > 0.5f ? 255 : (u8)(toast_timer * 2 * 255);
             float tw = Gfx_TextWidth(toast, 1.0f);
-            Gfx_Rect((SCREEN_W - tw) / 2 - 12, 412, tw + 24, 26, (Color){0, 0, 0, (u8)(a * 0.6f)}, (Color){0, 0, 0, (u8)(a * 0.6f)});
-            Gfx_Text((SCREEN_W - tw) / 2, 417, 1.0f, (Color){255, 255, 255, a}, toast);
+            Gfx_Rect((SCREEN_W - tw) / 2 - 12, 443, tw + 24, 28, (Color){0, 0, 0, (u8)(a * 0.6f)}, (Color){0, 0, 0, (u8)(a * 0.6f)});
+            Gfx_Text((SCREEN_W - tw) / 2, 448, 1.0f, (Color){255, 255, 255, a}, toast);
         }
 
         if (in.ir_valid)
