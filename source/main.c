@@ -87,20 +87,6 @@ static void format_time(char *buf, size_t len, float seconds)
     snprintf(buf, len, "%d:%04.1f", m, s);
 }
 
-static void format_count(char *buf, size_t len, double n)
-{
-    char raw[32];
-    snprintf(raw, sizeof(raw), "%.0f", n);
-    int digits = strlen(raw), out = 0;
-    for (int i = 0; i < digits && out < (int)len - 1; i++)
-    {
-        if (i && (digits - i) % 3 == 0 && out < (int)len - 2)
-            buf[out++] = ',';
-        buf[out++] = raw[i];
-    }
-    buf[out] = 0;
-}
-
 int main(int argc, char **argv)
 {
     Gfx_Init();
@@ -427,33 +413,27 @@ int main(int argc, char **argv)
 
         Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
 
-        snprintf(buf, sizeof(buf), "%d", (int)(rpm + 0.5f));
-        Gfx_TextShadow(604 - Gfx_TextWidth(buf, 3.0f), 20, 3.0f, white, buf);
-        Gfx_TextShadow(604 - Gfx_TextWidth("RPM", 1.0f), 76, 1.0f, dim, "RPM");
 
         // Records panel
         float px = 32, py = 340;
-        Gfx_Rect(px, py, 236 * ax, 98, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
-        Gfx_Text(px + 10, py + 8, 1.0f, accent, "RECORDS");
+        Gfx_Rect(px, py + 20, 236 * ax, 78, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
+        Gfx_Text(px + 10, py + 28, 1.0f, accent, "RECORDS");
         float vx = px + 226 * ax;
         snprintf(buf, sizeof(buf), "%d RPM", (int)(save.best_rpm + 0.5f));
-        Gfx_Text(px + 10, py + 32, 1.0f, dim, "Top speed");
-        Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 32, 1.0f, white, buf);
-        format_time(buf, sizeof(buf), save.longest_spin);
-        Gfx_Text(px + 10, py + 52, 1.0f, dim, "Longest spin");
+        Gfx_Text(px + 10, py + 52, 1.0f, dim, "Top speed");
         Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 52, 1.0f, white, buf);
-        format_count(buf, sizeof(buf), save.total_spins);
-        Gfx_Text(px + 10, py + 72, 1.0f, dim, "Total spins");
+        format_time(buf, sizeof(buf), save.longest_spin);
+        Gfx_Text(px + 10, py + 72, 1.0f, dim, "Longest spin");
         Gfx_Text(vx - Gfx_TextWidth(buf, 1.0f), py + 72, 1.0f, white, buf);
 
         // Colour picker
         snprintf(buf, sizeof(buf), "< %s >", colors[save.color].name);
         float cw = Gfx_TextWidth(buf, 1.0f);
         float cx = 608 - cw;
-        Gfx_Rect(cx - 44 * ax, py + 36, cw + 52 * ax, 40, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
-        Gfx_Disc(cx - 22 * ax, py + 56, 11, (Color){tint.r, tint.g, tint.b, 255}, (Color){tint.r, tint.g, tint.b, 255});
-        Gfx_Text(cx, py + 46, 1.0f, white, buf);
-        Gfx_Text(608 - Gfx_TextWidth("COLOR", 1.0f), py + 12, 1.0f, accent, "COLOR");
+        Gfx_Rect(cx - 44 * ax, py + 52, cw + 52 * ax, 40, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 150});
+        Gfx_Disc(cx - 22 * ax, py + 72, 11, (Color){tint.r, tint.g, tint.b, 255}, (Color){tint.r, tint.g, tint.b, 255});
+        Gfx_Text(cx, py + 62, 1.0f, white, buf);
+        Gfx_Text(608 - Gfx_TextWidth("COLOR", 1.0f), py + 28, 1.0f, accent, "COLOR");
 
         if (show_help && toast_timer <= 0.0f)
         {

@@ -25,8 +25,9 @@ Black, Gold and Rainbow.
 
 ## Records
 
-FidgetWii keeps your top speed (RPM), your longest spin (time spent coasting
-after the last push) and your lifetime number of spins. They are saved, along
+FidgetWii shows your top speed (RPM) and your longest spin (time spent
+coasting after the last push), and also tracks your lifetime number of spins.
+They are saved, along
 with your color choice, to `sd:/apps/FidgetWii/record.txt` when the spinner
 stops and when you exit.
 
