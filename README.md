@@ -7,6 +7,13 @@ shake it faster, change its color, and try to beat your records.
 
 ![FidgetWii](screenshot.png)
 
+## Download
+
+Grab the latest build from the [latest release](../../releases/latest): `FidgetWii.zip`. Every push to the main branch refreshes it, and tagged versions get their own entry on the [releases page](../../releases).
+
+1. Extract `FidgetWii.zip` to the root of your SD card (or USB drive).
+2. Open FidgetWii from the Homebrew Channel.
+
 ## Controls
 
 | Action | Wii Remote | GameCube | Classic Controller | Keyboard |
