@@ -1,5 +1,7 @@
 # FidgetWii
 
+**Version:** 1.1 · **Coder:** quatric
+
 A fidget spinner for the Wii. Flick it, grab it with the Wii Remote pointer,
 shake it faster, change its color, and try to beat your records.
 
