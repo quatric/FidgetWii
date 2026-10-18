@@ -5,6 +5,7 @@
 #include <gccore.h>
 #include <ogc/lwp_watchdog.h>
 #include <wiiuse/wpad.h>
+#include <wiiupdate.h>
 
 #include "gfx.h"
 #include "input.h"
@@ -92,6 +93,7 @@ int main(int argc, char **argv)
     Gfx_Init();
     Input_Init();
     Sound_Init();
+    WIIUPDATE_Start("quatric", "FidgetWii", VERSION);
 
     SYS_SetResetCallback(reset_cb);
     SYS_SetPowerCallback(power_cb);
@@ -128,6 +130,7 @@ int main(int argc, char **argv)
     float reset_confirm = 0.0f;
     char toast[64] = "";
     float toast_timer = 0.0f;
+    bool update_popup = false;
 
     if (!have_sd)
     {
@@ -148,6 +151,19 @@ int main(int argc, char **argv)
         InputState in;
         Input_Scan(&in);
         bool pushed = false;
+
+        // The update popup takes every button but HOME until A or B closes it
+        if (WIIUPDATE_TakeNotice())
+            update_popup = true;
+        if (update_popup)
+        {
+            if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
+                update_popup = false;
+            in.down &= WPAD_BUTTON_HOME;
+            in.held = 0;
+            in.gforce = 0.0f;
+            in.stick_valid = false;
+        }
 
         if (in.down & WPAD_BUTTON_HOME)
             break;
@@ -466,6 +482,24 @@ int main(int argc, char **argv)
             float tw = Gfx_TextWidth(toast, 1.0f);
             Gfx_Rect((SCREEN_W - tw) / 2 - 12, 443, tw + 24, 28, (Color){0, 0, 0, (u8)(a * 0.6f)}, (Color){0, 0, 0, (u8)(a * 0.6f)});
             Gfx_Text((SCREEN_W - tw) / 2, 448, 1.0f, (Color){255, 255, 255, a}, toast);
+        }
+
+        if (update_popup)
+        {
+            const char *l1 = "Update available";
+            const char *l2 = WIIUPDATE_Message();
+            const char *l3 = WIIUPDATE_Url();
+            const char *l4 = "Press A to continue";
+            float w = Gfx_TextWidth(l2, 1.0f);
+            if (Gfx_TextWidth(l3, 1.0f) > w) w = Gfx_TextWidth(l3, 1.0f);
+            w += 48;
+            float x = (SCREEN_W - w) / 2, y = 160;
+            Gfx_Rect(0, 0, SCREEN_W, SCREEN_H, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 120});
+            Gfx_Rect(x, y, w, 150, (Color){34, 40, 66, 245}, (Color){16, 18, 32, 245});
+            Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(l1, 2.0f)) / 2, y + 16, 2.0f, accent, l1);
+            Gfx_Text((SCREEN_W - Gfx_TextWidth(l2, 1.0f)) / 2, y + 62, 1.0f, white, l2);
+            Gfx_Text((SCREEN_W - Gfx_TextWidth(l3, 1.0f)) / 2, y + 84, 1.0f, cyan, l3);
+            Gfx_Text((SCREEN_W - Gfx_TextWidth(l4, 1.0f)) / 2, y + 120, 1.0f, white, l4);
         }
 
         if (in.ir_valid)
