@@ -93,6 +93,7 @@ int main(int argc, char **argv)
     Gfx_Init();
     Input_Init();
     Sound_Init();
+    WIIUPDATE_SetAppPath(argc > 0 ? argv[0] : NULL);
     WIIUPDATE_Start("quatric", "FidgetWii", VERSION);
 
     SYS_SetResetCallback(reset_cb);
@@ -152,13 +153,35 @@ int main(int argc, char **argv)
         Input_Scan(&in);
         bool pushed = false;
 
-        // The update popup takes every button but HOME until A or B closes it
+        // The update popup takes every button but HOME until it is closed:
+        // A installs the update (or just closes it when there is nothing to
+        // install), B closes it or cancels the download.
         if (WIIUPDATE_TakeNotice())
             update_popup = true;
         if (update_popup)
         {
-            if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
-                update_popup = false;
+            switch (WIIUPDATE_InstallState())
+            {
+            case WIIUPDATE_INSTALL_IDLE:
+                if ((in.down & WPAD_BUTTON_A) && WIIUPDATE_CanInstall())
+                    WIIUPDATE_Install();
+                else if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
+                    update_popup = false;
+                break;
+            case WIIUPDATE_INSTALL_DOWNLOADING:
+            case WIIUPDATE_INSTALL_EXTRACTING:
+                if (in.down & WPAD_BUTTON_B)
+                    WIIUPDATE_Cancel();
+                break;
+            case WIIUPDATE_INSTALL_DONE:
+                if (in.down & WPAD_BUTTON_A)
+                    exit_request = 1;
+                break;
+            case WIIUPDATE_INSTALL_FAILED:
+                if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
+                    update_popup = false;
+                break;
+            }
             in.down &= WPAD_BUTTON_HOME;
             in.held = 0;
             in.gforce = 0.0f;
@@ -486,19 +509,53 @@ int main(int argc, char **argv)
 
         if (update_popup)
         {
-            const char *l1 = "Update available";
-            const char *l2 = WIIUPDATE_Message();
-            const char *l3 = WIIUPDATE_Url();
-            const char *l4 = "Press A to continue";
+            wiiupdate_install_state ist = WIIUPDATE_InstallState();
+            bool busy = ist == WIIUPDATE_INSTALL_DOWNLOADING || ist == WIIUPDATE_INSTALL_EXTRACTING;
+            char l2[160];
+            const char *l1 = "Update available", *l3 = WIIUPDATE_Url(), *l4 = "Press A to continue";
+            snprintf(l2, sizeof(l2), "%s", WIIUPDATE_Message());
+            if (ist == WIIUPDATE_INSTALL_IDLE && WIIUPDATE_CanInstall())
+            {
+                l3 = "";
+                l4 = "A: Update now    B: Later";
+            }
+            else if (busy)
+            {
+                l1 = "Updating...";
+                l4 = "B: Cancel";
+                snprintf(l2, sizeof(l2), "%s %s", ist == WIIUPDATE_INSTALL_DOWNLOADING ? "Downloading" : "Installing",
+                         WIIUPDATE_Latest());
+            }
+            else if (ist == WIIUPDATE_INSTALL_DONE)
+            {
+                l1 = "Updated";
+                snprintf(l2, sizeof(l2), "FidgetWii %s is installed.", WIIUPDATE_Latest());
+                l3 = "";
+                l4 = "Press A to return to the loader";
+            }
+            else if (ist == WIIUPDATE_INSTALL_FAILED)
+            {
+                l1 = "Update failed";
+                snprintf(l2, sizeof(l2), "%s", WIIUPDATE_InstallError());
+            }
             float w = Gfx_TextWidth(l2, 1.0f);
             if (Gfx_TextWidth(l3, 1.0f) > w) w = Gfx_TextWidth(l3, 1.0f);
+            if (Gfx_TextWidth(l4, 1.0f) > w) w = Gfx_TextWidth(l4, 1.0f);
+            if (w < 300) w = 300;
             w += 48;
             float x = (SCREEN_W - w) / 2, y = 160;
             Gfx_Rect(0, 0, SCREEN_W, SCREEN_H, (Color){0, 0, 0, 120}, (Color){0, 0, 0, 120});
             Gfx_Rect(x, y, w, 150, (Color){34, 40, 66, 245}, (Color){16, 18, 32, 245});
             Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(l1, 2.0f)) / 2, y + 16, 2.0f, accent, l1);
             Gfx_Text((SCREEN_W - Gfx_TextWidth(l2, 1.0f)) / 2, y + 62, 1.0f, white, l2);
-            Gfx_Text((SCREEN_W - Gfx_TextWidth(l3, 1.0f)) / 2, y + 84, 1.0f, cyan, l3);
+            if (busy)
+            {
+                float bw = w - 48;
+                Gfx_Rect(x + 24, y + 86, bw, 14, (Color){0, 0, 0, 160}, (Color){0, 0, 0, 160});
+                Gfx_Rect(x + 24, y + 86, bw * WIIUPDATE_Progress() / 100.0f, 14, cyan, cyan);
+            }
+            else
+                Gfx_Text((SCREEN_W - Gfx_TextWidth(l3, 1.0f)) / 2, y + 84, 1.0f, cyan, l3);
             Gfx_Text((SCREEN_W - Gfx_TextWidth(l4, 1.0f)) / 2, y + 120, 1.0f, white, l4);
         }
 
