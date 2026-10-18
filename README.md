@@ -34,13 +34,15 @@ spinner stops and when you exit.
 ## Installing
 
 Copy the `apps/FidgetWii` folder to the root of your SD card and put
-`FidgetWii.dol` in it as `boot.dol`, then launch it from the Homebrew Channel.
+`FidgetWii-xz.dol` (or `FidgetWii.dol`) in it as `boot.dol`, then launch it from the Homebrew Channel.
 
 ## Building
 
 Needs devkitPPC and libogc.
 
     make
+
+`make` also writes `FidgetWii-xz.dol`, the same program packed into a self-extracting `.dol` a fraction of the size; that is the one to copy as `boot.dol`. The first build downloads and builds [dolxz](https://github.com/FIX94/dolxz), which needs a host C compiler and liblzma (Debian/Ubuntu: `apt-get install liblzma-dev pkg-config`; macOS: `brew install xz`). `make NO_DOLXZ=1` skips this and uses the plain `.dol`.
 
 To also support the Wii U GamePad (Wii U VC with a patched fw.img), Wii U Pro
 Controller and wired DualShock 3:
