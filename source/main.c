@@ -15,7 +15,7 @@
 #include "body_bin.h"
 #include "detail_bin.h"
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 #define TEX_SIZE 512
 #define SPINNER_X 320.0f
