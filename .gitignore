@@ -6,3 +6,4 @@ build_preview.png
 *.d
 *.elf
 *.dol
+.dolxz/
