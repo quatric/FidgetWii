@@ -1,4 +1,4 @@
-// Controller input via libinput-wii.
+// Controller input via libwiiinput.
 // Supports Wii Remote (+ Nunchuk / Classic Controller), GameCube controller
 // and USB keyboard, plus Wii U GamePad, Wii U Pro Controller and DualShock 3
 // when built with the optional controller libraries.

@@ -17,7 +17,7 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source libinput-wii/source
+SOURCES		:=	source libwiiinput/source
 DATA		:=	data
 INCLUDES	:=
 
@@ -57,7 +57,7 @@ endif
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:=	$(CURDIR)/portlibs/ppc $(CURDIR)/libinput-wii
+LIBDIRS	:=	$(CURDIR)/portlibs/ppc $(CURDIR)/libwiiinput
 LIBDIRS	+=	$(CURDIR)/libwiiupdate
 
 #---------------------------------------------------------------------------------
