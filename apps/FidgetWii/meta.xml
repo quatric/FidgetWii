@@ -2,8 +2,8 @@
 <app version='1.0'>
     <name>FidgetWii</name>
     <coder>quatric</coder>
-    <version>1.1</version>
-    <release_date>20261014000000</release_date>
+    <version>1.1.1</version>
+    <release_date>20261020000000</release_date>
     <short_description>A fidget spinner for your Wii.</short_description>
     <long_description>Spin a fidget spinner on your TV.
 
