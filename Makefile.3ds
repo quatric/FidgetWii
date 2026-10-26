@@ -10,13 +10,13 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
-TARGET		:=	FidgetWii
+TARGET		:=	Fidget3DS
 BUILD		:=	build-3ds
 SOURCES		:=	source/common source/n3ds
 DATA		:=	data_3ds
 INCLUDES	:=	source/common
 
-APP_TITLE	:=	FidgetWii
+APP_TITLE	:=	Fidget3DS
 APP_DESCRIPTION	:=	A fidget spinner
 APP_AUTHOR	:=	quatric
 APP_ICON	:=	$(TOPDIR)/apps/FidgetWii/icon-3ds.png

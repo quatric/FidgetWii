@@ -445,7 +445,7 @@ int main(int argc, char **argv)
         const Color cyan = {0, 220, 255, 255};
         char buf[64];
 
-        Gfx_TextShadow(36, 26, 2.0f, white, "FidgetWii");
+        Gfx_TextShadow(36, 26, 2.0f, white, APP_NAME);
 
         // Current spin time (keeps showing the last spin after it stops)
         format_time(buf, sizeof(buf), spin_time);

@@ -14,14 +14,14 @@
 #define SAVE_REL 1
 #elif defined(PLATFORM_SWITCH)
 #define SAVE_DIR_1 "sdmc:/switch"
-#define SAVE_DIR_2 "sdmc:/switch/FidgetWii"
+#define SAVE_DIR_2 "sdmc:/switch/FidgetSwitch"
 #elif defined(PLATFORM_3DS)
 #define SAVE_DIR_1 "sdmc:/3ds"
-#define SAVE_DIR_2 "sdmc:/3ds/FidgetWii"
+#define SAVE_DIR_2 "sdmc:/3ds/Fidget3DS"
 #elif defined(PLATFORM_NDS)
 #include <fat.h>
 #define SAVE_DIR_1 "fat:/_nds"
-#define SAVE_DIR_2 "fat:/_nds/FidgetWii"
+#define SAVE_DIR_2 "fat:/_nds/FidgetDS"
 #endif
 
 #ifdef SAVE_REL
@@ -48,7 +48,7 @@ static bool mount_storage(void)
         return false;
     const char *mount = WHBGetSdCardMountPath();
     snprintf(save_root, sizeof(save_root), "%s%s", mount[0] == '/' ? "fs:" : "", mount);
-    snprintf(save_dir, sizeof(save_dir), "%s/wiiu/apps/FidgetWii", save_root);
+    snprintf(save_dir, sizeof(save_dir), "%s/wiiu/apps/FidgetWiiU", save_root);
     snprintf(save_file, sizeof(save_file), "%s/record.txt", save_dir);
     return true;
 #elif defined(PLATFORM_NDS)

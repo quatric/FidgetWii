@@ -2,7 +2,7 @@
 
 **Version:** 1.1.1 · **Coder:** quatric
 
-A fidget spinner for the Wii, Wii U, Switch, 3DS and DS. Flick it, grab it with the Wii Remote pointer,
+A fidget spinner for the Wii (FidgetWii), Wii U (FidgetWiiU), Switch (FidgetSwitch), 3DS (Fidget3DS) and DS (FidgetDS). Flick it, grab it with the Wii Remote pointer,
 shake it faster, change its color, and try to beat your records.
 
 ![FidgetWii](screenshot.png)
@@ -14,10 +14,10 @@ Grab the latest build from the [latest release](../../releases/latest): `FidgetW
 | Console | File | Install |
 | --- | --- | --- |
 | Wii | `FidgetWii.zip` | Extract to the root of your SD card (or USB drive), then open FidgetWii from the Homebrew Channel. |
-| Wii U | `FidgetWii.wuhb` | Copy to `wiiu/apps/` on the SD card and launch it from the Aroma menu. |
-| Switch | `FidgetWii.nro` | Copy to `switch/` on the SD card and launch it from the Homebrew Menu. |
-| 3DS | `FidgetWii.3dsx` | Copy to `3ds/` on the SD card and launch it from the Homebrew Launcher. |
-| DS | `FidgetWii.nds` | Run it from your flashcard (needs a working DLDI patch to save records). |
+| Wii U | `FidgetWiiU.wuhb` | Copy to `wiiu/apps/` on the SD card and launch it from the Aroma menu. |
+| Switch | `FidgetSwitch.nro` | Copy to `switch/` on the SD card and launch it from the Homebrew Menu. |
+| 3DS | `Fidget3DS.3dsx` | Copy to `3ds/` on the SD card and launch it from the Homebrew Launcher. |
+| DS | `FidgetDS.nds` | Run it from your flashcard (needs a working DLDI patch to save records). |
 
 ## Controls
 

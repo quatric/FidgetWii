@@ -38,7 +38,7 @@ void Hud_Native(const HudInfo *hud)
 
     char buf[48], t[16];
 
-    row(1, "          FidgetWii");
+    row(1, "          " APP_NAME);
 
     format_time(t, sizeof(t), hud->spin_time);
     snprintf(buf, sizeof(buf), "  SPIN TIME   %s%s", t, hud->spinning ? "  >>" : "");

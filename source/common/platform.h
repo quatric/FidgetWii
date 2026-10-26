@@ -4,18 +4,23 @@
 #include <stdbool.h>
 
 #if defined(PLATFORM_WII)
+#define APP_NAME "FidgetWii"
 #define HELP_TEXT "A Flick  B Grab/Brake  Shake Spin  +/- Color  HOME Quit"
 #define RESET_PROMPT "Press 2 again to reset records"
 #elif defined(PLATFORM_WIIU)
+#define APP_NAME "FidgetWiiU"
 #define HELP_TEXT "A Flick  B Brake  Touch Grab  L/R Color  + Quit"
 #define RESET_PROMPT "Press X again to reset records"
 #elif defined(PLATFORM_SWITCH)
+#define APP_NAME "FidgetSwitch"
 #define HELP_TEXT "A Flick  B Brake  Touch Grab  L/R Color  + Quit"
 #define RESET_PROMPT "Press X again to reset records"
 #elif defined(PLATFORM_3DS)
+#define APP_NAME "Fidget3DS"
 #define HELP_TEXT "A Flick  B Brake  Touch Grab  L/R Color  START Quit"
 #define RESET_PROMPT "Press X again to reset records"
 #else
+#define APP_NAME "FidgetDS"
 #define HELP_TEXT "A Flick  B Brake  Touch Grab  L/R Color  + Quit"
 #define RESET_PROMPT "Press X again to reset records"
 #endif

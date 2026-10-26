@@ -55,7 +55,7 @@ jobs:
         with:
           name: release-FidgetWii-wiiu
           if-no-files-found: error
-          path: FidgetWii.wuhb
+          path: FidgetWiiU.wuhb
 
   switch:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
         with:
           name: release-FidgetWii-switch
           if-no-files-found: error
-          path: FidgetWii.nro
+          path: FidgetSwitch.nro
 
   n3ds:
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
         with:
           name: release-FidgetWii-3ds
           if-no-files-found: error
-          path: FidgetWii.3dsx
+          path: Fidget3DS.3dsx
 
   nds:
     runs-on: ubuntu-latest
@@ -100,7 +100,7 @@ jobs:
         with:
           name: release-FidgetWii-nds
           if-no-files-found: error
-          path: FidgetWii.nds
+          path: FidgetDS.nds
 
   # Every push to the default branch refreshes the "latest" release; tags like v1.2.0 also get their own release.
   release:
@@ -137,16 +137,16 @@ jobs:
             Latest build of FidgetWii from ${{ github.sha }}.
 
             Wii: extract FidgetWii.zip to the root of your SD card (or USB drive) and open FidgetWii from the Homebrew Channel.
-            Wii U: copy FidgetWii.wuhb to wiiu/apps/ on the SD card.
-            Switch: copy FidgetWii.nro to switch/ on the SD card.
-            3DS: copy FidgetWii.3dsx to 3ds/ on the SD card.
-            DS: run FidgetWii.nds from your flashcard.
+            Wii U: copy FidgetWiiU.wuhb to wiiu/apps/ on the SD card.
+            Switch: copy FidgetSwitch.nro to switch/ on the SD card.
+            3DS: copy Fidget3DS.3dsx to 3ds/ on the SD card.
+            DS: run FidgetDS.nds from your flashcard.
           files: |
             out/FidgetWii.zip
-            out/FidgetWii.wuhb
-            out/FidgetWii.nro
-            out/FidgetWii.3dsx
-            out/FidgetWii.nds
+            out/FidgetWiiU.wuhb
+            out/FidgetSwitch.nro
+            out/Fidget3DS.3dsx
+            out/FidgetDS.nds
       - name: Publish tagged release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
@@ -157,13 +157,13 @@ jobs:
           fail_on_unmatched_files: true
           body: |
             Wii: extract FidgetWii.zip to the root of your SD card (or USB drive) and open FidgetWii from the Homebrew Channel.
-            Wii U: copy FidgetWii.wuhb to wiiu/apps/ on the SD card.
-            Switch: copy FidgetWii.nro to switch/ on the SD card.
-            3DS: copy FidgetWii.3dsx to 3ds/ on the SD card.
-            DS: run FidgetWii.nds from your flashcard.
+            Wii U: copy FidgetWiiU.wuhb to wiiu/apps/ on the SD card.
+            Switch: copy FidgetSwitch.nro to switch/ on the SD card.
+            3DS: copy Fidget3DS.3dsx to 3ds/ on the SD card.
+            DS: run FidgetDS.nds from your flashcard.
           files: |
             out/FidgetWii.zip
-            out/FidgetWii.wuhb
-            out/FidgetWii.nro
-            out/FidgetWii.3dsx
-            out/FidgetWii.nds
+            out/FidgetWiiU.wuhb
+            out/FidgetSwitch.nro
+            out/Fidget3DS.3dsx
+            out/FidgetDS.nds

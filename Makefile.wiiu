@@ -12,14 +12,14 @@ endif
 
 include $(DEVKITPRO)/wut/share/wut_rules
 
-TARGET		:=	FidgetWii
+TARGET		:=	FidgetWiiU
 BUILD		:=	build-wiiu
 SOURCES		:=	source/common source/sdl
 DATA		:=	data_portable
 INCLUDES	:=	source/common
 
-APP_NAME	:=	FidgetWii
-APP_SHORTNAME	:=	FidgetWii
+APP_NAME	:=	FidgetWiiU
+APP_SHORTNAME	:=	FidgetWiiU
 APP_AUTHOR	:=	quatric
 APP_ICON	:=	apps/FidgetWii/icon-wiiu.png
 

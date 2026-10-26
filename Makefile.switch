@@ -11,13 +11,13 @@ export DEVKITA64 ?= $(DEVKITPRO)/devkitA64
 TOPDIR ?= $(CURDIR)
 include $(DEVKITPRO)/libnx/switch_rules
 
-TARGET		:=	FidgetWii
+TARGET		:=	FidgetSwitch
 BUILD		:=	build-switch
 SOURCES		:=	source/common source/sdl
 DATA		:=	data_portable
 INCLUDES	:=	source/common
 
-APP_TITLE	:=	FidgetWii
+APP_TITLE	:=	FidgetSwitch
 APP_AUTHOR	:=	quatric
 APP_VERSION	:=	1.1
 APP_ICON	:=	$(CURDIR)/apps/FidgetWii/icon-switch.jpg

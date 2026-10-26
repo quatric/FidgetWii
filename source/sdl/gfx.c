@@ -5,6 +5,7 @@
 #include <string.h>
 #include <SDL.h>
 #include "gfx.h"
+#include "platform.h"
 #include "font_data.h"
 #include "body_ia_bin.h"
 #include "detail_rgba_bin.h"
@@ -79,7 +80,7 @@ static void load_font(Font *font, const FontInfo *info, const uint8_t *a8)
 void Gfx_Init(void)
 {
     SDL_InitSubSystem(SDL_INIT_VIDEO);
-    gfx_window = SDL_CreateWindow("FidgetWii", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    gfx_window = SDL_CreateWindow(APP_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                   1280, 720, SDL_WINDOW_FULLSCREEN);
     renderer = SDL_CreateRenderer(gfx_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer)
