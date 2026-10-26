@@ -2,20 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gccore.h>
-#include <ogc/lwp_watchdog.h>
-#include <wiiuse/wpad.h>
-#include <wiiupdate.h>
+#include <stdint.h>
 
 #include "gfx.h"
 #include "input.h"
+#include "platform.h"
 #include "save.h"
 #include "sound.h"
 
-#include "body_bin.h"
-#include "detail_bin.h"
+#ifdef HAVE_UPDATER
+#include <wiiupdate.h>
+#endif
 
-#define VERSION "1.1"
+#include "version.h"
 
 #define TEX_SIZE 512
 #define SPINNER_X 320.0f
@@ -29,7 +28,7 @@
 typedef struct
 {
     const char *name;
-    u8 r, g, b;
+    uint8_t r, g, b;
 } Preset;
 
 static const Preset colors[] = {
@@ -50,12 +49,6 @@ static const Preset colors[] = {
 #define NUM_COLORS (int)(sizeof(colors) / sizeof(colors[0]))
 #define RAINBOW (NUM_COLORS - 1)
 
-static volatile int exit_request; // 1 = return to loader, 2 = power off
-
-static void reset_cb(u32 irq, void *ctx) { exit_request = 1; }
-static void power_cb(void) { exit_request = 2; }
-static void wpad_power_cb(s32 chan) { exit_request = 2; }
-
 static Color hsv(float h, float s, float v)
 {
     h = fmodf(h, 1.0f) * 6.0f;
@@ -71,7 +64,7 @@ static Color hsv(float h, float s, float v)
     case 4: r = t; g = p; b = v; break;
     default: r = v; g = p; b = q; break;
     }
-    return (Color){(u8)(r * 255), (u8)(g * 255), (u8)(b * 255), 255};
+    return (Color){(uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255), 255};
 }
 
 static float wrap_deg(float a)
@@ -90,26 +83,16 @@ static void format_time(char *buf, size_t len, float seconds)
 
 int main(int argc, char **argv)
 {
+    Platform_Init(argc, argv);
     Gfx_Init();
     Input_Init();
     Sound_Init();
-    WIIUPDATE_SetAppPath(argc > 0 ? argv[0] : NULL);
-    WIIUPDATE_Start("quatric", "FidgetWii", VERSION);
-
-    SYS_SetResetCallback(reset_cb);
-    SYS_SetPowerCallback(power_cb);
-    WPAD_SetPowerButtonCallback(wpad_power_cb);
 
     SaveData save;
     bool have_sd = Save_Init(&save);
     if (save.color < 0 || save.color >= NUM_COLORS)
         save.color = 0;
 
-    GXTexObj body_tex, detail_tex;
-    Gfx_LoadTexture(&body_tex, body_bin, body_bin_size, TEX_SIZE, TEX_SIZE, GX_TF_IA8, true);
-    Gfx_LoadTexture(&detail_tex, detail_bin, detail_bin_size, TEX_SIZE, TEX_SIZE, GX_TF_RGBA8, true);
-
-    const float ax = Gfx_AspectX();
     const float radius = SPINNER_SIZE * 0.5f;
 
     float angle = 0.0f;   // degrees, clockwise
@@ -131,7 +114,9 @@ int main(int argc, char **argv)
     float reset_confirm = 0.0f;
     char toast[64] = "";
     float toast_timer = 0.0f;
+#ifdef HAVE_UPDATER
     bool update_popup = false;
+#endif
 
     if (!have_sd)
     {
@@ -139,12 +124,12 @@ int main(int argc, char **argv)
         toast_timer = 5.0f;
     }
 
-    u64 last = gettime();
+    double last = Platform_Now();
 
-    while (!exit_request)
+    while (!Platform_ExitRequested())
     {
-        u64 now = gettime();
-        float dt = ticks_to_microsecs(diff_ticks(last, now)) / 1000000.0f;
+        double now = Platform_Now();
+        float dt = (float)(now - last);
         last = now;
         if (dt > 0.1f) dt = 0.1f;
         if (dt <= 0.0f) dt = 1.0f / 60.0f;
@@ -156,6 +141,7 @@ int main(int argc, char **argv)
         // The update popup takes every button but HOME until it is closed:
         // A installs the update (or just closes it when there is nothing to
         // install), B closes it or cancels the download.
+#ifdef HAVE_UPDATER
         if (WIIUPDATE_TakeNotice())
             update_popup = true;
         if (update_popup)
@@ -163,57 +149,58 @@ int main(int argc, char **argv)
             switch (WIIUPDATE_InstallState())
             {
             case WIIUPDATE_INSTALL_IDLE:
-                if ((in.down & WPAD_BUTTON_A) && WIIUPDATE_CanInstall())
+                if ((in.down & BTN_A) && WIIUPDATE_CanInstall())
                     WIIUPDATE_Install();
-                else if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
+                else if (in.down & (BTN_A | BTN_B))
                     update_popup = false;
                 break;
             case WIIUPDATE_INSTALL_DOWNLOADING:
             case WIIUPDATE_INSTALL_EXTRACTING:
-                if (in.down & WPAD_BUTTON_B)
+                if (in.down & BTN_B)
                     WIIUPDATE_Cancel();
                 break;
             case WIIUPDATE_INSTALL_DONE:
-                if (in.down & WPAD_BUTTON_A)
-                    exit_request = 1;
+                if (in.down & BTN_A)
+                    Platform_RequestExit(1);
                 break;
             case WIIUPDATE_INSTALL_FAILED:
-                if (in.down & (WPAD_BUTTON_A | WPAD_BUTTON_B))
+                if (in.down & (BTN_A | BTN_B))
                     update_popup = false;
                 break;
             }
-            in.down &= WPAD_BUTTON_HOME;
+            in.down &= BTN_HOME;
             in.held = 0;
             in.gforce = 0.0f;
             in.stick_valid = false;
         }
+#endif
 
-        if (in.down & WPAD_BUTTON_HOME)
+        if (in.down & BTN_HOME)
             break;
 
         // --- colour selection ---
-        if (in.down & (WPAD_BUTTON_RIGHT | WPAD_BUTTON_PLUS))
+        if (in.down & (BTN_RIGHT | BTN_PLUS))
         {
             save.color = (save.color + 1) % NUM_COLORS;
             color_save_timer = 2.0f;
         }
-        if (in.down & (WPAD_BUTTON_LEFT | WPAD_BUTTON_MINUS))
+        if (in.down & (BTN_LEFT | BTN_MINUS))
         {
             save.color = (save.color + NUM_COLORS - 1) % NUM_COLORS;
             color_save_timer = 2.0f;
         }
 
-        if (in.down & WPAD_BUTTON_UP)
+        if (in.down & BTN_UP)
         {
             save.sound = !save.sound;
             color_save_timer = 2.0f;
             snprintf(toast, sizeof(toast), "Sound %s", save.sound ? "on" : "off");
             toast_timer = 2.0f;
         }
-        if (in.down & WPAD_BUTTON_DOWN)
+        if (in.down & BTN_DOWN)
             show_help = !show_help;
 
-        if (in.down & WPAD_BUTTON_2)
+        if (in.down & BTN_2)
         {
             if (reset_confirm > 0.0f)
             {
@@ -228,7 +215,7 @@ int main(int argc, char **argv)
             else
             {
                 reset_confirm = 3.0f;
-                snprintf(toast, sizeof(toast), "Press 2 again to reset records");
+                snprintf(toast, sizeof(toast), RESET_PROMPT);
                 toast_timer = 3.0f;
             }
         }
@@ -236,12 +223,12 @@ int main(int argc, char **argv)
         // --- spinning ---
         float dir = omega < 0.0f ? -1.0f : 1.0f;
 
-        if (in.down & WPAD_BUTTON_A)
+        if (in.down & BTN_A)
         {
             omega += FLICK_RPM * 6.0f;
             pushed = true;
         }
-        if (in.down & WPAD_BUTTON_1)
+        if (in.down & BTN_1)
         {
             omega -= FLICK_RPM * 6.0f;
             pushed = true;
@@ -278,12 +265,12 @@ int main(int argc, char **argv)
         float pdx = 0, pdy = 0, pdist = 1e9f;
         if (in.ir_valid)
         {
-            pdx = (in.ir_x - SPINNER_X) / ax;
+            pdx = (in.ir_x - SPINNER_X) / Gfx_PointerAspectX();
             pdy = in.ir_y - SPINNER_Y;
             pdist = sqrtf(pdx * pdx + pdy * pdy);
         }
 
-        if ((in.down & WPAD_BUTTON_B) && pdist < radius * 0.95f && pdist > 8.0f)
+        if ((in.down & BTN_B) && pdist < radius * 0.95f && pdist > 8.0f)
         {
             grabbed = true;
             grab_prev = atan2f(pdy, pdx) * (180.0f / M_PI);
@@ -292,7 +279,7 @@ int main(int argc, char **argv)
 
         if (grabbed)
         {
-            if (!(in.held & WPAD_BUTTON_B) || !in.ir_valid)
+            if (!(in.held & BTN_B) || !in.ir_valid)
             {
                 grabbed = false;
                 pushed = true;
@@ -306,7 +293,7 @@ int main(int argc, char **argv)
                 omega += (delta / dt - omega) * 0.5f;
             }
         }
-        else if (in.held & WPAD_BUTTON_B)
+        else if (in.held & BTN_B)
         {
             omega *= expf(-2.5f * dt);
         }
@@ -416,12 +403,16 @@ int main(int argc, char **argv)
 
         // --- draw ---
         Gfx_BeginFrame();
+        for (int target = 0; target < Gfx_NumTargets(); target++)
+        {
+        Gfx_SetTarget(target);
+        const float ax = Gfx_AspectX();
 
         Gfx_Rect(0, 0, SCREEN_W, SCREEN_H, (Color){22, 26, 44, 255}, (Color){8, 8, 16, 255});
 
         float glow = 0.25f + fminf(rpm / 600.0f, 1.0f) * 0.45f;
         Gfx_Disc(SPINNER_X, SPINNER_Y, radius * 1.15f,
-                 (Color){tint.r, tint.g, tint.b, (u8)(glow * 110)}, (Color){tint.r, tint.g, tint.b, 0});
+                 (Color){tint.r, tint.g, tint.b, (uint8_t)(glow * 110)}, (Color){tint.r, tint.g, tint.b, 0});
 
         // Motion blur: draw the newest copy solid, then older copies averaged in
         float per_frame = fabsf(omega) / 60.0f;
@@ -430,20 +421,24 @@ int main(int argc, char **argv)
         if (copies > 32) copies = 32;
         float back = omega < 0 ? -1.0f : 1.0f;
 
-        Gfx_RotatedTexture(&body_tex, SPINNER_X + 8, SPINNER_Y + 12, SPINNER_SIZE,
+        Gfx_RotatedTexture(TEX_BODY, SPINNER_X + 8, SPINNER_Y + 12, SPINNER_SIZE,
                            angle * (M_PI / 180.0f), (Color){0, 0, 0, 90});
 
         for (int k = 0; k < copies; k++)
         {
             float a = angle - back * (copies > 1 ? span * k / (copies - 1) : 0.0f);
             float rad = a * (M_PI / 180.0f);
-            u8 alpha = (u8)(255 / (k + 1));
+            uint8_t alpha = (uint8_t)(255 / (k + 1));
             Color body = tint;
             body.a = alpha;
-            Gfx_RotatedTexture(&body_tex, SPINNER_X, SPINNER_Y, SPINNER_SIZE, rad, body);
-            Gfx_RotatedTexture(&detail_tex, SPINNER_X, SPINNER_Y, SPINNER_SIZE, rad, (Color){255, 255, 255, alpha});
+            Gfx_RotatedTexture(TEX_BODY, SPINNER_X, SPINNER_Y, SPINNER_SIZE, rad, body);
+            Gfx_RotatedTexture(TEX_DETAIL, SPINNER_X, SPINNER_Y, SPINNER_SIZE, rad, (Color){255, 255, 255, alpha});
         }
 
+        // The HUD lives on one target only (the bottom screen of a handheld
+        // is just the spinner and a touch surface).
+        if (Gfx_TargetHasHud(target))
+        {
         // HUD
         const Color white = {255, 255, 255, 255};
         const Color accent = {255, 200, 0, 255};
@@ -489,7 +484,7 @@ int main(int argc, char **argv)
 
         if (show_help && toast_timer <= 0.0f)
         {
-            const char *help = "A Flick  B Grab/Brake  Shake Spin  +/- Color  HOME Quit";
+            const char *help = HELP_TEXT;
             Gfx_TextShadow((SCREEN_W - Gfx_TextWidth(help, 1.0f)) / 2, 448, 1.0f, white, help);
         }
 
@@ -501,12 +496,13 @@ int main(int argc, char **argv)
 
         if (toast_timer > 0.0f)
         {
-            u8 a = toast_timer > 0.5f ? 255 : (u8)(toast_timer * 2 * 255);
+            uint8_t a = toast_timer > 0.5f ? 255 : (uint8_t)(toast_timer * 2 * 255);
             float tw = Gfx_TextWidth(toast, 1.0f);
-            Gfx_Rect((SCREEN_W - tw) / 2 - 12, 443, tw + 24, 28, (Color){0, 0, 0, (u8)(a * 0.6f)}, (Color){0, 0, 0, (u8)(a * 0.6f)});
+            Gfx_Rect((SCREEN_W - tw) / 2 - 12, 443, tw + 24, 28, (Color){0, 0, 0, (uint8_t)(a * 0.6f)}, (Color){0, 0, 0, (uint8_t)(a * 0.6f)});
             Gfx_Text((SCREEN_W - tw) / 2, 448, 1.0f, (Color){255, 255, 255, a}, toast);
         }
 
+#ifdef HAVE_UPDATER
         if (update_popup)
         {
             wiiupdate_install_state ist = WIIUPDATE_InstallState();
@@ -559,8 +555,21 @@ int main(int argc, char **argv)
             Gfx_Text((SCREEN_W - Gfx_TextWidth(l4, 1.0f)) / 2, y + 120, 1.0f, white, l4);
         }
 
+#endif
+        }
+
         if (in.ir_valid)
             Gfx_Pointer(in.ir_x, in.ir_y);
+        }
+
+#ifdef PLATFORM_NDS
+        {
+            HudInfo hud = {spin_time, save.best_rpm, save.longest_spin, spinning,
+                           record_banner > 0.0f && fmodf(record_banner, 0.5f) > 0.15f,
+                           show_help, colors[save.color].name, toast_timer > 0.0f ? toast : ""};
+            Hud_Native(&hud);
+        }
+#endif
 
         Gfx_EndFrame();
     }
@@ -571,7 +580,7 @@ int main(int argc, char **argv)
     Sound_Shutdown();
     Input_Shutdown();
 
-    if (exit_request == 2)
-        SYS_ResetSystem(SYS_POWEROFF, 0, 0);
+    Gfx_Shutdown();
+    Platform_Shutdown();
     return 0;
 }

@@ -1,0 +1,87 @@
+#---------------------------------------------------------------------------------
+# Wii U build (SDL2). Run: make -f Makefile.wiiu
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>devkitpro")
+endif
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
+
+include $(DEVKITPRO)/wut/share/wut_rules
+
+TARGET		:=	FidgetWii
+BUILD		:=	build-wiiu
+SOURCES		:=	source/common source/sdl
+DATA		:=	data_portable
+INCLUDES	:=	source/common
+
+APP_NAME	:=	FidgetWii
+APP_SHORTNAME	:=	FidgetWii
+APP_AUTHOR	:=	quatric
+APP_ICON	:=	apps/FidgetWii/icon-wiiu.png
+
+CFLAGS	:=	-g -Wall -O2 -ffunction-sections -ffast-math \
+			$(MACHDEP) -D__WIIU__ -D__WUT__ -DPLATFORM_WIIU
+CFLAGS	+=	$(INCLUDE) $(shell $(PORTLIBS_PATH)/wiiu/bin/sdl2-config --cflags)
+CXXFLAGS	:=	$(CFLAGS)
+ASFLAGS	:=	-g $(ARCH)
+LDFLAGS	=	-g $(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
+
+LIBS	:=	$(shell $(PORTLIBS_PATH)/wiiu/bin/sdl2-config --libs) -lwut -lm
+
+LIBDIRS	:=	$(PORTLIBS) $(WUT_ROOT) $(WUT_ROOT)/usr
+
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export TOPDIR	:=	$(CURDIR)
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+export LD	:=	$(CC)
+export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
+export OFILES_SRC	:=	$(CFILES:.c=.o)
+export OFILES	:=	$(OFILES_BIN) $(OFILES_SRC)
+export HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
+
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) \
+			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+			-I$(CURDIR)/$(BUILD)
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+
+
+.PHONY: $(BUILD) clean all
+all: $(BUILD)
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wiiu
+
+clean:
+	@echo clean ...
+	@rm -fr $(BUILD) $(TARGET).wuhb $(TARGET).rpx $(TARGET).elf
+
+else
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+all	:	$(OUTPUT).wuhb
+$(OUTPUT).wuhb	:	$(OUTPUT).rpx
+$(OUTPUT).rpx	:	$(OUTPUT).elf
+$(OUTPUT).elf	:	$(OFILES)
+$(OFILES_SRC)	:	$(HFILES_BIN)
+
+%.bin.o	%_bin.h :	%.bin
+	@echo $(notdir $<)
+	@$(bin2o)
+
+-include $(DEPENDS)
+
+endif

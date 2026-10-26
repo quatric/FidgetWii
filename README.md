@@ -2,7 +2,7 @@
 
 **Version:** 1.1.1 · **Coder:** quatric
 
-A fidget spinner for the Wii. Flick it, grab it with the Wii Remote pointer,
+A fidget spinner for the Wii, Wii U, Switch, 3DS and DS. Flick it, grab it with the Wii Remote pointer,
 shake it faster, change its color, and try to beat your records.
 
 ![FidgetWii](screenshot.png)
@@ -11,10 +11,17 @@ shake it faster, change its color, and try to beat your records.
 
 Grab the latest build from the [latest release](../../releases/latest): `FidgetWii.zip`. Every push to the main branch refreshes it, and tagged versions get their own entry on the [releases page](../../releases).
 
-1. Extract `FidgetWii.zip` to the root of your SD card (or USB drive).
-2. Open FidgetWii from the Homebrew Channel.
+| Console | File | Install |
+| --- | --- | --- |
+| Wii | `FidgetWii.zip` | Extract to the root of your SD card (or USB drive), then open FidgetWii from the Homebrew Channel. |
+| Wii U | `FidgetWii.wuhb` | Copy to `wiiu/apps/` on the SD card and launch it from the Aroma menu. |
+| Switch | `FidgetWii.nro` | Copy to `switch/` on the SD card and launch it from the Homebrew Menu. |
+| 3DS | `FidgetWii.3dsx` | Copy to `3ds/` on the SD card and launch it from the Homebrew Launcher. |
+| DS | `FidgetWii.nds` | Run it from your flashcard (needs a working DLDI patch to save records). |
 
 ## Controls
+
+### Wii
 
 | Action | Wii Remote | GameCube | Classic Controller | Keyboard |
 | --- | --- | --- | --- | --- |
@@ -29,6 +36,26 @@ Grab the latest build from the [latest release](../../releases/latest): `FidgetW
 | Reset records | 2 (press twice) | X (twice) | X (twice) | Y (twice) |
 | Exit | HOME | Start | HOME | Esc |
 
+### Wii U, Switch, 3DS and DS
+
+| Action | Buttons |
+| --- | --- |
+| Flick clockwise | A |
+| Flick counterclockwise | Y |
+| Brake | Hold B |
+| Grab and spin by hand | Touch the spinner and move (GamePad, Switch screen, 3DS and DS touch screen) |
+| Spin faster | Rotate the left stick / Circle Pad; shake the 3DS |
+| Change color | Left/Right or L/R |
+| Sound on/off | Up |
+| Show/hide help | Down |
+| Reset records | X (press twice) |
+| Exit | START / + |
+
+The Wii U version works with the GamePad and the Pro Controller. On the 3DS the
+top screen shows the whole display and the bottom screen is the spinner and
+touch surface. On the DS the spinner is on the touch screen and the top screen
+shows the HUD. The 3DS needs `dspfirm.cdc` in `sdmc:/3ds/` for the sound.
+
 Colors: Yellow, Red, Orange, Lime, Green, Cyan, Blue, Purple, Pink, White,
 Black, Gold and Rainbow.
 
@@ -40,7 +67,7 @@ spin, and FidgetWii also tracks your lifetime number of spins. They are saved,
 along with your color choice, to `sd:/apps/FidgetWii/record.txt` when the
 spinner stops and when you exit.
 
-## Installing
+## Installing on the Wii
 
 Copy the `apps/FidgetWii` folder to the root of your SD card and put
 `FidgetWii-xz.dol` (or `FidgetWii.dol`) in it as `boot.dol`, then launch it from the Homebrew Channel.
@@ -68,6 +95,24 @@ The HUD font is FOT-Rodin NTLG Pro B, pre-rendered into glyph atlases
 included; to regenerate the atlases, run:
 
     python3 scripts/make_font.py FOT-RodinNTLGPro-B.otf
+
+### Other consoles
+
+The other consoles share the game in `source/common` and have their own backend
+and Makefile:
+
+| Console | Command | Needs |
+| --- | --- | --- |
+| Wii U | `make -f Makefile.wiiu` | devkitPPC, wut, `wiiu-sdl2` |
+| Switch | `make -f Makefile.switch` | devkitA64, libnx, `switch-sdl2` |
+| 3DS | `make -f Makefile.3ds` | devkitARM, libctru, citro2d |
+| DS | `make -f Makefile.nds` | devkitARM, libnds, libfat |
+
+The Wii U and Switch backends (`source/sdl`) render with SDL2, the 3DS backend
+(`source/n3ds`) with citro2d and the DS backend (`source/nds`) with the 3D
+engine. `python3 scripts/make_portable_assets.py` regenerates the plain-pixel
+textures they use (`data_portable`, `data_3ds`, `data_nds`) from the Wii ones in
+`data/` (needs Pillow and, for the 3DS, `tex3ds`).
 
 ## Credits
 

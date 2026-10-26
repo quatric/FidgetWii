@@ -6,6 +6,10 @@
 #include "font_data.h"
 #include "font_small_bin.h"
 #include "font_large_bin.h"
+#include "body_bin.h"
+#include "detail_bin.h"
+
+#define TEX_SIZE 512
 
 #define FIFO_SIZE (256 * 1024)
 
@@ -18,6 +22,7 @@ typedef struct
 static void *xfb[2];
 static int fb;
 static GXRModeObj *rmode;
+static GXTexObj body_tex, detail_tex;
 static Font font_small, font_large;
 static float aspect_x = 1.0f;
 
@@ -26,13 +31,38 @@ float Gfx_AspectX(void)
     return aspect_x;
 }
 
+float Gfx_PointerAspectX(void)
+{
+    return aspect_x;
+}
+
+int Gfx_NumTargets(void)
+{
+    return 1;
+}
+
+void Gfx_SetTarget(int target)
+{
+}
+
+bool Gfx_TargetHasHud(int target)
+{
+    return true;
+}
+
+void Gfx_Shutdown(void)
+{
+}
+
+static void Gfx_LoadTexture(GXTexObj *obj, const void *data, u32 size, u16 w, u16 h, u8 fmt, bool smooth);
+
 static void load_font(Font *font, const FontInfo *info, const u8 *data, u32 size)
 {
     font->info = info;
     Gfx_LoadTexture(&font->tex, data, size, info->atlas_w, info->atlas_h, GX_TF_I8, true);
 }
 
-void Gfx_LoadTexture(GXTexObj *obj, const void *data, u32 size, u16 w, u16 h, u8 fmt, bool smooth)
+static void Gfx_LoadTexture(GXTexObj *obj, const void *data, u32 size, u16 w, u16 h, u8 fmt, bool smooth)
 {
     DCFlushRange((void *)data, size);
     GX_InitTexObj(obj, (void *)data, w, h, fmt, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -110,6 +140,9 @@ void Gfx_Init(void)
     GX_SetAlphaUpdate(GX_TRUE);
     GX_SetColorUpdate(GX_TRUE);
 
+    Gfx_LoadTexture(&body_tex, body_bin, body_bin_size, TEX_SIZE, TEX_SIZE, GX_TF_IA8, true);
+    Gfx_LoadTexture(&detail_tex, detail_bin, detail_bin_size, TEX_SIZE, TEX_SIZE, GX_TF_RGBA8, true);
+
     load_font(&font_small, &font_small_info, font_small_bin, font_small_bin_size);
     load_font(&font_large, &font_large_info, font_large_bin, font_large_bin_size);
 }
@@ -183,13 +216,13 @@ void Gfx_Disc(float cx, float cy, float radius, Color inner, Color outer)
     GX_End();
 }
 
-void Gfx_RotatedTexture(GXTexObj *tex, float cx, float cy, float size, float angle, Color tint)
+void Gfx_RotatedTexture(int which, float cx, float cy, float size, float angle, Color tint)
 {
     static const float corners[4][4] = {
         {-0.5f, -0.5f, 0, 0}, {0.5f, -0.5f, 1, 0}, {0.5f, 0.5f, 1, 1}, {-0.5f, 0.5f, 0, 1}};
     float c = cosf(angle), s = sinf(angle);
 
-    use_texture(tex);
+    use_texture(which == TEX_BODY ? &body_tex : &detail_tex);
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
     for (int i = 0; i < 4; i++)
     {

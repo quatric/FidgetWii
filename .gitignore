@@ -7,3 +7,13 @@ build_preview.png
 *.elf
 *.dol
 .dolxz/
+build-*/
+*.nro
+*.nacp
+*.rpx
+*.wuhb
+*.3dsx
+*.smdh
+*.nds
+*.lst
+*.map

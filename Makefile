@@ -17,15 +17,15 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source libwiiinput/source
+SOURCES		:=	source/common source/wii libwiiinput/source
 DATA		:=	data
-INCLUDES	:=
+INCLUDES	:=	source/common
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall -ffast-math $(MACHDEP) $(INCLUDE)
+CFLAGS	= -g -O2 -Wall -ffast-math -DPLATFORM_WII -DHAVE_UPDATER $(MACHDEP) $(INCLUDE)
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
