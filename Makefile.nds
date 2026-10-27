@@ -1,0 +1,83 @@
+#---------------------------------------------------------------------------------
+# Nintendo DS build. Run: make -f Makefile.nds
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITARM)),)
+$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
+endif
+
+include $(DEVKITARM)/ds_rules
+
+TOPDIR ?= $(CURDIR)
+TARGET		:=	FidgetDS
+BUILD		:=	build-nds
+SOURCES		:=	source/common source/nds
+DATA		:=	data_nds
+INCLUDES	:=	source/common
+
+GAME_TITLE	:=	FidgetDS
+GAME_SUBTITLE1	:=	A fidget spinner
+GAME_SUBTITLE2	:=	quatric
+GAME_ICON	:=	$(TOPDIR)/apps/FidgetWii/icon-nds.bmp
+
+ARCH	:=	-march=armv5te -mtune=arm946e-s
+
+CFLAGS	:=	-g -Wall -O2 -ffunction-sections -fdata-sections -ffast-math \
+			$(ARCH) -DARM9 -DPLATFORM_NDS
+CFLAGS	+=	$(INCLUDE)
+CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
+ASFLAGS	:=	-g $(ARCH)
+LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+
+LIBS	:=	-lfat -lnds9 -lm
+
+LIBDIRS	:=	$(LIBNDS) $(PORTLIBS)
+
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export TOPDIR	:=	$(CURDIR)
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+export LD	:=	$(CC)
+export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
+export OFILES_SRC	:=	$(CFILES:.c=.o)
+export OFILES	:=	$(OFILES_BIN) $(OFILES_SRC)
+export HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
+
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) \
+			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+			-I$(CURDIR)/$(BUILD)
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+.PHONY: $(BUILD) clean all
+all: $(BUILD)
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.nds
+
+clean:
+	@echo clean ...
+	@rm -fr $(BUILD) $(TARGET).nds $(TARGET).elf
+
+else
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+$(OUTPUT).nds	:	$(OUTPUT).elf
+$(OUTPUT).elf	:	$(OFILES)
+$(OFILES_SRC)	:	$(HFILES_BIN)
+
+%.bin.o	%_bin.h :	%.bin
+	@echo $(notdir $<)
+	@$(bin2o)
+
+-include $(DEPENDS)
+
+endif
