@@ -1,6 +1,6 @@
 # FidgetWii
 
-**Version:** 1.1.1 · **Coder:** quatric
+**Version:** 1.2.0 · **Coder:** quatric
 
 A fidget spinner for the Wii (FidgetWii), Wii U (FidgetWiiU), Switch (FidgetSwitch), 3DS (Fidget3DS) and DS (FidgetDS). Flick it, grab it with the Wii Remote pointer,
 shake it faster, change its color, and try to beat your records.
