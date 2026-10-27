@@ -48,7 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Wii U libraries
-        run: dkp-pacman -Sy --noconfirm wiiu-dev wiiu-sdl2
+        run: |
+          # The image already ships these; pkg.devkitpro.org refuses requests from CI runners.
+          dkp-pacman -Q wiiu-dev wiiu-sdl2 || dkp-pacman -Sy --noconfirm --needed wiiu-dev wiiu-sdl2
       - name: Build
         run: make -f Makefile.wiiu
       - uses: actions/upload-artifact@v4
@@ -63,7 +65,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Switch libraries
-        run: dkp-pacman -Sy --noconfirm switch-dev switch-sdl2
+        run: |
+          # The image already ships these; pkg.devkitpro.org refuses requests from CI runners.
+          dkp-pacman -Q switch-dev switch-sdl2 || dkp-pacman -Sy --noconfirm --needed switch-dev switch-sdl2
       - name: Build
         run: make -f Makefile.switch
       - uses: actions/upload-artifact@v4
@@ -78,7 +82,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install 3DS libraries
-        run: dkp-pacman -Sy --noconfirm 3ds-dev
+        run: |
+          # The image already ships these; pkg.devkitpro.org refuses requests from CI runners.
+          dkp-pacman -Q 3ds-dev || dkp-pacman -Sy --noconfirm --needed 3ds-dev
       - name: Build
         run: make -f Makefile.3ds
       - uses: actions/upload-artifact@v4
@@ -93,7 +99,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install DS libraries
-        run: dkp-pacman -Sy --noconfirm nds-dev
+        run: |
+          # The image already ships these; pkg.devkitpro.org refuses requests from CI runners.
+          dkp-pacman -Q nds-dev || dkp-pacman -Sy --noconfirm --needed nds-dev
       - name: Build
         run: make -f Makefile.nds
       - uses: actions/upload-artifact@v4
