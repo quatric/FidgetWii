@@ -4,8 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(PLATFORM_WII) || defined(PLATFORM_WIIU)
 #ifdef PLATFORM_WII
 #include <wiiuse/wpad.h>
+#else
+#include <padscore/wpad.h>
+#endif
 #define BTN_A WPAD_BUTTON_A
 #define BTN_B WPAD_BUTTON_B
 #define BTN_1 WPAD_BUTTON_1

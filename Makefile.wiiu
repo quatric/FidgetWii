@@ -14,7 +14,7 @@ include $(DEVKITPRO)/wut/share/wut_rules
 
 TARGET		:=	FidgetWiiU
 BUILD		:=	build-wiiu
-SOURCES		:=	source/common source/sdl
+SOURCES		:=	source/common source/sdl source/wiiu
 DATA		:=	data_portable
 INCLUDES	:=	source/common
 
@@ -30,9 +30,9 @@ CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-g $(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=	$(shell $(PORTLIBS_PATH)/wiiu/bin/sdl2-config --libs) -lwut -lm
+LIBS	:=	-linput-wiiu $(shell $(PORTLIBS_PATH)/wiiu/bin/sdl2-config --libs) -lwut -lm
 
-LIBDIRS	:=	$(PORTLIBS) $(WUT_ROOT) $(WUT_ROOT)/usr
+LIBDIRS	:=	$(CURDIR)/libwiiuinput $(PORTLIBS) $(WUT_ROOT) $(WUT_ROOT)/usr
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
@@ -57,8 +57,12 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 
 
-.PHONY: $(BUILD) clean all
+.PHONY: $(BUILD) clean all libwiiuinput-lib
 all: $(BUILD)
+
+$(BUILD): libwiiuinput-lib
+libwiiuinput-lib:
+	@$(MAKE) --no-print-directory -C $(CURDIR)/libwiiuinput
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@

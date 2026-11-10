@@ -1,6 +1,8 @@
 // Controller and touch input through SDL2: GamePad, Pro Controller and
 // Joy-Cons as game controllers, and the touch screen as a pointer.
 
+#ifndef PLATFORM_WIIU // the Wii U reads its controllers through libwiiuinput (source/wiiu/wiiu_input.c)
+
 #include <math.h>
 #include <SDL.h>
 #include "gfx.h"
@@ -143,3 +145,5 @@ void Input_Scan(InputState *state)
     state->stick_valid = hypotf(sx, sy) >= 0.6f;
     state->stick_ang = state->stick_valid ? atan2f(sx, sy) * (180.0f / M_PI) : 0.0f;
 }
+
+#endif // !PLATFORM_WIIU

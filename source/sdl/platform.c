@@ -10,8 +10,13 @@ static volatile int exit_request;
 
 void Platform_Init(int argc, char **argv)
 {
+#ifdef PLATFORM_WIIU
+    // libwiiuinput reads the controllers; SDL's joystick layer would compete for the same queues.
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+#else
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
+#endif
 }
 
 double Platform_Now(void)
