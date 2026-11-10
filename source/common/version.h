@@ -1,6 +1,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define FIDGET_VERSION "1.1"
+#define FIDGET_VERSION "1.2.1"
 
 #endif
