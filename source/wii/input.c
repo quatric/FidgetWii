@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 #include <ogcsys.h>
 #include <wiiuse/wpad.h>
 #include <input_wii.h>
@@ -23,6 +24,11 @@ void Input_Init(void)
 
 void Input_Shutdown(void)
 {
+    // WPAD_Shutdown frees the Wii Remote state while the Bluetooth stack can
+    // still deliver events for it, which crashes in libogc's __wpad_eventCB.
+    // Disconnect the remotes first and let their events drain.
+    for (int ch = 0; ch < WPAD_MAX_WIIMOTES; ch++) WPAD_Disconnect(ch);
+    usleep(300000);
     INPUT_Shutdown();
 }
 
